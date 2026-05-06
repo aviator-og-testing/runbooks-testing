@@ -1,0 +1,30 @@
+name: Always Fail
+
+on:
+  workflow_dispatch:
+    inputs:
+      sleep_seconds:
+        description: "Seconds to sleep before completing"
+        required: false
+        default: "0"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  fail:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sleep
+        if: inputs.sleep_seconds != '0' && inputs.sleep_seconds != ''
+        run: |
+          echo "💤 Sleeping for ${{ inputs.sleep_seconds }} seconds..."
+          sleep ${{ inputs.sleep_seconds }}
+
+      - name: Fail
+        run: |
+          echo "❌ This job always fails"
+          exit 1

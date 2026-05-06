@@ -1,0 +1,5 @@
+# Platform team owns repo-level configuration
+/copier.yml @aviator-og-testing/platform
+/README.md @aviator-og-testing/platform
+/.github/ @aviator-og-testing/platform
+/.pre-commit-config.yaml @aviator-og-testing/platform

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>runbooks_testing</title>
+    <style>
+        /* Basic reset and styling - keep it minimal */
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        nav { margin: 1rem 0; }
+        a { color: #0066cc; }
+        .timestamp {
+            color: #666;
+            font-size: 0.875rem;
+            margin-top: 2rem;
+        }
+        .user-item, .item-entry {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <!-- Underscore templates - legacy pattern from Backbone.js era -->
+    <script type="text/template" id="home-template">
+        <h1>Welcome to runbooks_testing</h1>
+        <p>A sample mono-repo with FastAPI, Go, and vanilla JS.</p>
+        <nav>
+            <a href="#users">Users</a> |
+            <a href="#items">Items</a>
+        </nav>
+        <p class="timestamp">Page loaded: <%= formatTimestamp(new Date()) %></p>
+    </script>
+
+    <script type="text/template" id="users-template">
+        <h1>Users</h1>
+        <div id="user-list">
+            <% users.each(function(user) { %>
+                <div class="user-item">
+                    <strong><%= user.get('username') %></strong>
+                    (<%= user.get('email') %>)
+                </div>
+            <% }); %>
+            <% if (users.length === 0) { %>
+                <p>No users yet. The API would load them here.</p>
+            <% } %>
+        </div>
+        <p class="timestamp">Last updated: <%= getRelativeTime(new Date()) %></p>
+    </script>
+
+    <script type="text/template" id="items-template">
+        <h1>Items</h1>
+        <div id="item-list">
+            <% items.each(function(item) { %>
+                <div class="item-entry">
+                    <strong><%= item.get('name') %></strong>
+                    <% if (item.get('description')) { %>
+                        - <%= item.get('description') %>
+                    <% } %>
+                </div>
+            <% }); %>
+            <% if (items.length === 0) { %>
+                <p>No items yet. The API would load them here.</p>
+            <% } %>
+        </div>
+        <p class="timestamp">Last updated: <%= getRelativeTime(new Date()) %></p>
+    </script>
+
+    <!--
+        Legacy dependency stack from circa 2013-2015.
+        TODO: Consider migrating to React/Vue/Svelte
+        Backbone.js is no longer actively developed.
+    -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.1/backbone-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

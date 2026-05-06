@@ -1,0 +1,4 @@
+owners:
+  - team: "aviator-og-testing/frontend"
+notify_teams:
+  - team: "aviator-og-testing/design"

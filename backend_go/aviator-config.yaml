@@ -1,0 +1,5 @@
+owners:
+  - team: "aviator-og-testing/backend_go"
+notify_teams:
+  - team: "aviator-og-testing/platform"
+  - team: "aviator-og-testing/api-consumers"

@@ -1,0 +1,3 @@
+backend_python @aviator-og-testing/backend_python
+backend_go @aviator-og-testing/backend_go
+frontend @aviator-og-testing/frontend

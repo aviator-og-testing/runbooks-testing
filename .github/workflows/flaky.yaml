@@ -1,0 +1,44 @@
+name: Flaky
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      failure_percentage:
+        description: "Percentage chance of failure (0-100)"
+        required: false
+        default: "50"
+        type: string
+      sleep_seconds:
+        description: "Seconds to sleep before completing"
+        required: false
+        default: "0"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  flaky:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sleep
+        if: inputs.sleep_seconds != '0' && inputs.sleep_seconds != ''
+        run: |
+          echo "Sleeping for ${{ inputs.sleep_seconds }} seconds..."
+          sleep ${{ inputs.sleep_seconds }}
+
+      - name: Flaky check
+        run: |
+          FAILURE_RATE="${{ inputs.failure_percentage || '50' }}"
+          ROLL=$((RANDOM % 100))
+          echo "Failure rate: ${FAILURE_RATE}%, rolled: ${ROLL}"
+          if [ "$ROLL" -lt "$FAILURE_RATE" ]; then
+            echo "Bad luck — failing this time"
+            exit 1
+          else
+            echo "Got lucky — passing this time"
+            exit 0
+          fi

@@ -1,0 +1,49 @@
+name: Pass or Fail
+
+on:
+  workflow_dispatch:
+    inputs:
+      should_pass:
+        description: "Should this job pass?"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      sleep_seconds:
+        description: "Seconds to sleep before completing"
+        required: false
+        default: "0"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  conditional:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sleep
+        if: inputs.sleep_seconds != '0' && inputs.sleep_seconds != ''
+        run: |
+          echo "💤 Sleeping for ${{ inputs.sleep_seconds }} seconds..."
+          sleep ${{ inputs.sleep_seconds }}
+
+      - name: Check if should pass
+        id: check
+        run: echo "result=pass" >> $GITHUB_OUTPUT
+
+      - name: Pass
+        if: inputs.should_pass == 'true'
+        run: |
+          echo "✅ Configured to pass"
+          exit 0
+
+      - name: Fail
+        if: inputs.should_pass == 'false'
+        run: |
+          echo "❌ Configured to fail"
+          exit 1
