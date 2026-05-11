@@ -7,9 +7,9 @@ For larger applications, consider splitting routes into separate routers.
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import Any, Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from peewee import IntegrityError
 from pydantic import BaseModel
 
@@ -41,6 +41,13 @@ class ItemResponse(BaseModel):
     description: str | None
 
     model_config = {"from_attributes": True}
+
+
+class PaginatedItemsResponse(BaseModel):
+    items: list[ItemResponse]
+    total_count: int
+    page: int
+    page_size: int
 
 
 class HealthResponse(BaseModel):
@@ -115,8 +122,23 @@ async def create_item(item: ItemCreate) -> ItemResponse:
     return ItemResponse(id=db_item.id, name=db_item.name, description=db_item.description)
 
 
-@app.get("/items", response_model=list[ItemResponse])
-async def list_items() -> list[ItemResponse]:
-    """List all items."""
-    items: Any = Item.select()
-    return [ItemResponse(id=i.id, name=i.name, description=i.description) for i in items]
+@app.get("/items", response_model=PaginatedItemsResponse)
+async def list_items(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    sort_by: Literal["name", "created_at"] = Query("created_at"),
+) -> PaginatedItemsResponse:
+    """List items with pagination and sorting."""
+    query: Any = Item.select()
+    if sort_by == "created_at":
+        query = query.order_by(Item.created_at.desc())
+    else:
+        query = query.order_by(Item.name.asc())
+    total_count: int = query.count()
+    items: Any = query.paginate(page, page_size)
+    return PaginatedItemsResponse(
+        items=[ItemResponse(id=i.id, name=i.name, description=i.description) for i in items],
+        total_count=total_count,
+        page=page,
+        page_size=page_size,
+    )
