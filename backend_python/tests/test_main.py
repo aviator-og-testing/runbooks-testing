@@ -95,9 +95,96 @@ class TestItemEndpoints:
         assert response.json()["description"] is None
 
     def test_list_items(self, client: TestClient, sample_item: Item) -> None:
-        """GET /items should return list of items."""
+        """GET /items should return paginated list of items with defaults."""
         response = client.get("/items")
         assert response.status_code == 200
-        items = response.json()
-        assert len(items) == 1
-        assert items[0]["name"] == sample_item.name
+        data = response.json()
+        assert len(data["items"]) == 1
+        assert data["items"][0]["name"] == sample_item.name
+        assert data["total_count"] == 1
+        assert data["page"] == 1
+        assert data["page_size"] == 20
+
+    def test_list_items_with_custom_page_size(self, client: TestClient) -> None:
+        """GET /items?page=1&page_size=2 should return only 2 items with full total_count."""
+        for i in range(5):
+            Item.create(name=f"Item {i}", description=None)
+        response = client.get("/items?page=1&page_size=2")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["items"]) == 2
+        assert data["total_count"] == 5
+        assert data["page"] == 1
+        assert data["page_size"] == 2
+
+    def test_list_items_partial_last_page(self, client: TestClient) -> None:
+        """GET /items should return remaining items on the last partial page."""
+        for i in range(5):
+            Item.create(name=f"Item {i}", description=None)
+        response = client.get("/items?page=3&page_size=2")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["items"]) == 1
+        assert data["total_count"] == 5
+        assert data["page"] == 3
+        assert data["page_size"] == 2
+
+    def test_list_items_empty(self, client: TestClient) -> None:
+        """GET /items should return empty list with metadata when no items exist."""
+        response = client.get("/items?page=1&page_size=10")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["items"] == []
+        assert data["total_count"] == 0
+        assert data["page"] == 1
+        assert data["page_size"] == 10
+
+    def test_list_items_page_beyond_total(self, client: TestClient) -> None:
+        """GET /items with a page beyond total results should return empty items."""
+        for i in range(3):
+            Item.create(name=f"Item {i}", description=None)
+        response = client.get("/items?page=5&page_size=2")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["items"] == []
+        assert data["total_count"] == 3
+        assert data["page"] == 5
+        assert data["page_size"] == 2
+
+    def test_list_items_page_size_zero_rejected(self, client: TestClient) -> None:
+        """GET /items?page_size=0 should return HTTP 422."""
+        response = client.get("/items?page_size=0")
+        assert response.status_code == 422
+
+    def test_list_items_page_zero_rejected(self, client: TestClient) -> None:
+        """GET /items?page=0 should return HTTP 422."""
+        response = client.get("/items?page=0")
+        assert response.status_code == 422
+
+    def test_list_items_sort_by_name_ascending(self, client: TestClient) -> None:
+        """GET /items?sort_by=name should order items by name ascending."""
+        Item.create(name="Charlie", description=None)
+        Item.create(name="Alpha", description=None)
+        Item.create(name="Bravo", description=None)
+        response = client.get("/items?sort_by=name")
+        assert response.status_code == 200
+        names = [item["name"] for item in response.json()["items"]]
+        assert names == ["Alpha", "Bravo", "Charlie"]
+
+    def test_list_items_default_sort_by_created_at_desc(self, client: TestClient) -> None:
+        """GET /items should order by created_at descending by default."""
+        from datetime import datetime, timedelta
+
+        base = datetime(2026, 1, 1, 12, 0, 0)
+        Item.create(name="oldest", description=None, created_at=base)
+        Item.create(name="middle", description=None, created_at=base + timedelta(hours=1))
+        Item.create(name="newest", description=None, created_at=base + timedelta(hours=2))
+        response = client.get("/items")
+        assert response.status_code == 200
+        names = [item["name"] for item in response.json()["items"]]
+        assert names == ["newest", "middle", "oldest"]
+
+    def test_list_items_invalid_sort_by_rejected(self, client: TestClient) -> None:
+        """GET /items with an invalid sort_by value should return HTTP 422."""
+        response = client.get("/items?sort_by=description")
+        assert response.status_code == 422
