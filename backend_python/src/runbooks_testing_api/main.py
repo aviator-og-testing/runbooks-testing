@@ -7,6 +7,7 @@ For larger applications, consider splitting routes into separate routers.
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -52,6 +53,12 @@ class HelloResponse(BaseModel):
     message: str
 
 
+class HealthCheckResponse(BaseModel):
+    status: str
+    service: str
+    timestamp: str
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Handle startup and shutdown events."""
@@ -72,6 +79,16 @@ app = FastAPI(
 async def root() -> dict[str, str]:
     """Health check endpoint."""
     return {"message": "Hello World", "status": "ok"}
+
+
+@app.get("/health", response_model=HealthCheckResponse)
+async def health_check() -> HealthCheckResponse:
+    """Service health check with current UTC timestamp."""
+    return HealthCheckResponse(
+        status="ok",
+        service="runbooks_testing_api",
+        timestamp=datetime.now(UTC).isoformat(),
+    )
 
 
 @app.get("/hello/{name}")
