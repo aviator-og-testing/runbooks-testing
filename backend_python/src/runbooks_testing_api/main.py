@@ -52,7 +52,7 @@ class HealthResponse(BaseModel):
 class HealthCheckResponse(BaseModel):
     status: str
     service: str
-    timestamp: str
+    timestamp: int
 
 
 class HelloResponse(BaseModel):
@@ -87,7 +87,7 @@ async def health_check() -> HealthCheckResponse:
     return HealthCheckResponse(
         status="ok",
         service="runbooks_testing_api",
-        timestamp=datetime.datetime.utcnow().isoformat(),
+        timestamp=int(datetime.datetime.utcnow().timestamp()),
     )
 
 
