@@ -7,6 +7,7 @@ For larger applications, consider splitting routes into separate routers.
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -44,8 +45,9 @@ class ItemResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    message: str
     status: str
+    service: str
+    timestamp: str
 
 
 class HelloResponse(BaseModel):
@@ -72,6 +74,16 @@ app = FastAPI(
 async def root() -> dict[str, str]:
     """Health check endpoint."""
     return {"message": "Hello World", "status": "ok"}
+
+
+@app.get("/health", response_model=HealthResponse)
+async def health() -> HealthResponse:
+    """Health check endpoint."""
+    return HealthResponse(
+        status="ok",
+        service="runbooks_testing_api",
+        timestamp=datetime.now(UTC).isoformat(),
+    )
 
 
 @app.get("/hello/{name}")
