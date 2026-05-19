@@ -85,7 +85,7 @@ async def root() -> dict[str, str]:
 async def health_check() -> HealthCheckResponse:
     """Health check endpoint."""
     return HealthCheckResponse(
-        status="ok",
+        status="okay",
         service="runbooks_testing_api",
         timestamp=datetime.utcnow().isoformat(),
     )
