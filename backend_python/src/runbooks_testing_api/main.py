@@ -5,6 +5,7 @@ This module sets up the FastAPI application and defines the core routes.
 For larger applications, consider splitting routes into separate routers.
 """
 
+import datetime
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
@@ -43,6 +44,12 @@ class ItemResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class HealthCheckResponse(BaseModel):
+    status: str
+    service: str
+    timestamp: str
+
+
 class HealthResponse(BaseModel):
     message: str
     status: str
@@ -72,6 +79,16 @@ app = FastAPI(
 async def root() -> dict[str, str]:
     """Health check endpoint."""
     return {"message": "Hello World", "status": "ok"}
+
+
+@app.get("/health", response_model=HealthCheckResponse)
+async def health_check() -> HealthCheckResponse:
+    """Health check endpoint with timestamp."""
+    return HealthCheckResponse(
+        status="ok",
+        service="runbooks_testing_api",
+        timestamp=datetime.datetime.utcnow().isoformat(),
+    )
 
 
 @app.get("/hello/{name}")
