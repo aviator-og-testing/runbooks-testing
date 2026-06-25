@@ -74,6 +74,23 @@ runbooks:
 
 The preview name `default` maps to `.aviator/verify/skills/default.md`. Aviator brings up the sandbox, runs the setup script, exposes port 3000 as the preview URL, and the Verify agent drives it. Sign-in uses the seeded `admin` / `admin` or `alice` / `password` accounts.
 
+### Driving Verify by hand
+
+`verify/` holds a small harness for exercising Verify locally (human-driven, no grading):
+
+- `verify/baseline-invariants.yaml` — the standing rules Verify checks every PR against.
+- `verify/secrets.example` — the account secrets the collector logs in with.
+- `verify/cases/<case>/` — each is a `change.sh` + a `criteria.md` (the PR body).
+
+One-time, alongside the two preview steps above:
+
+- Add the secrets from `verify/secrets.example` in Runbooks > Settings > Secrets.
+- Seed the baseline invariants: `just verify-invariants` (writes `[AUTOGEN]`-titled invariants into the local mergeit DB from the YAML).
+
+To run a case: `just verify-pr <case>` opens a PR (e.g. `just verify-pr button-color-pass`), then open the runbook for that PR in Aviator and hit Preview, then Verify, and eyeball the routing and verdicts.
+
+To change the invariants: edit `verify/baseline-invariants.yaml` and re-run `just verify-invariants`.
+
 ## Testing
 
 ### Python Backend

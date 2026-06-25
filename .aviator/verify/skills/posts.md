@@ -1,7 +1,8 @@
 # Posts
 
 Posts is a simple blog. Any signed-in user can publish a post; each post records
-its author and creation time.
+its author and creation time. Sign in using the credential placeholders from
+`default.md`.
 
 ## Getting around
 
@@ -15,14 +16,14 @@ its author and creation time.
 
 - **Create:** any signed-in user fills the title + content form on `#items` and
   submits; the new post appears at the top with their username as author.
-- **Edit:** reachable from the single-post page (an **Edit** button) and from an
-  **Edit** link on posts you may change in the list. Editing is allowed for the
-  post's author or an admin; others are blocked in the UI and by the backend
-  (`PUT /api/items/<id>` returns 403 for a non-author, non-admin).
+- **Edit:** allowed for the post's author or an admin. To verify the gate, use
+  two different regular users, publish as `{{ secrets.bob_username }}`, then
+  confirm `{{ secrets.alice_username }}` has no Edit affordance and cannot edit
+  that post. The admin (`{{ secrets.admin_username }}` /
+  `{{ secrets.admin_password }}`) can edit any post.
 
-## What's observable here
+## Not observable here
 
-The blog is fully functional against SQLite: create a post and watch it appear,
-open its page, edit it as the author (or as admin), and confirm a non-author
-cannot edit someone else's post. Sign in as different seeded users to exercise
-the permission cases.
+Author and timestamp are rendered, but they originate from the server. The edit
+authorization is enforced server-side, only its UI effect (no Edit button, or a
+rejected save) is visible in the preview; judge the rejection itself from code.
