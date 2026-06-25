@@ -5,16 +5,8 @@
 default:
     @just --list
 
-# Seed/refresh this app's baseline invariants in the local mergeit DB.
-# Wipes the [AUTOGEN] invariants for this repo's account and recreates them from
-# verify/baseline-invariants.yaml. Override MERGEIT_DATABASE_URL or
-# REPO_FULL_NAME if your local setup differs.
-verify-invariants:
-    uv run --no-project --with pyyaml --with 'psycopg[binary]' python verify/seed_invariants.py
-
 # Open a test PR for a verify case (verify/cases/<case>/). Branches off the
-# current branch, applies the case's change, pushes, and opens a PR with the
-# case's acceptance criteria as the body. Requires gh.
+# current branch, applies the case's change, pushes, and opens a PR. Requires gh.
 verify-pr case:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -26,4 +18,4 @@ verify-pr case:
     git add -A
     git commit -qm "verify case: {{case}}"
     git push -q -u origin "$branch"
-    gh pr create --title "verify: {{case}}" --body-file "$dir/criteria.md"
+    gh pr create --title "verify: {{case}}" --body "Automated verify test case: {{case}}."
