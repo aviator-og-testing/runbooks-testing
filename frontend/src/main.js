@@ -13,6 +13,9 @@
 
   var API_BASE = "/api";
 
+  // Send a CSRF token header on every API request.
+  $.ajaxSetup({ headers: { "X-CSRF-Token": "static-demo-token" } });
+
   // ============================================================
   // Session helpers (sessionStorage-backed, demo only)
   // ============================================================
