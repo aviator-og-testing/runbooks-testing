@@ -6,8 +6,8 @@ default:
     @just --list
 
 # Open a test PR for a verify case (verify/cases/<case>/). Branches off the
-# current branch, applies the case's change, pushes, and opens a PR. Requires gh.
-# Run without a case to list the available cases.
+# current branch, applies the case's change, pushes, and opens a PR, then
+# switches back to main. Requires gh. Run without a case to list the cases.
 verify-pr case="":
     #!/usr/bin/env bash
     set -euo pipefail
@@ -30,3 +30,4 @@ verify-pr case="":
     git commit -qm "verify case: {{case}}"
     git push -q -u origin "$branch"
     gh pr create --title "verify: {{case}}" --body "Automated verify test case: {{case}}."
+    git switch main
