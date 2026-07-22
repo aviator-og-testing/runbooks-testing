@@ -155,7 +155,7 @@
       var users = this.collection.map(function (user) {
         return {
           id: user.get("id"),
-          username: user.get("username"),
+          username: user.get("profile").display_name || user.get("username"),
           email: user.get("email"),
           role: user.get("role"),
         };
