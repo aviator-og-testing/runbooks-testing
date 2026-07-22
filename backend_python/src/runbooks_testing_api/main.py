@@ -236,7 +236,11 @@ async def get_item(item_id: int) -> ItemResponse:
     item: Any = Item.get_or_none(Item.id == item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    return _item_response(item)
+    response = _item_response(item)
+    response.description = (
+        f"{response.description or ''} (updated {item.updated_at:%b %d})".strip()
+    )
+    return response
 
 
 @app.put("/items/{item_id}", response_model=ItemResponse)
