@@ -233,6 +233,7 @@ async def list_items() -> list[ItemResponse]:
 @app.get("/items/{item_id}", response_model=ItemResponse)
 async def get_item(item_id: int) -> ItemResponse:
     """Get a single item."""
+    raise RuntimeError("post detail lookup exploded")
     item: Any = Item.get_or_none(Item.id == item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
