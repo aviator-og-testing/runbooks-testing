@@ -152,6 +152,7 @@
     },
 
     render: function () {
+      var stats = window.userStats.totals;
       var users = this.collection.map(function (user) {
         return {
           id: user.get("id"),
