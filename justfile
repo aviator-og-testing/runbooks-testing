@@ -26,7 +26,9 @@ verify-pr case="":
     branch="verify/{{case}}-$(date +%Y%m%d-%H%M%S)"
     git switch -c "$branch"
     bash "$dir/change.sh"
-    git add -A
+    # verify/ holds the case definitions; keeping them out of the test PR
+    # diff stops criteria generation from reading the case's own notes.
+    git add -A -- ':(exclude)verify'
     git commit -qm "verify case: {{case}}"
     git push -q -u origin "$branch"
     gh pr create --title "verify: {{case}}" --body "Automated verify test case: {{case}}."
