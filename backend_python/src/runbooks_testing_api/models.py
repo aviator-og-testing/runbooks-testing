@@ -39,6 +39,8 @@ class User(BaseModel):
 
     username: ClassVar[TextField] = TextField(unique=True)
     email: ClassVar[TextField] = TextField(unique=True)
+    password: ClassVar[TextField] = TextField(default="")
+    role: ClassVar[TextField] = TextField(default="user")
     created_at: ClassVar[DateTimeField] = DateTimeField(default=datetime.now)
 
     def __str__(self) -> str:
@@ -55,6 +57,7 @@ class Item(BaseModel):
 
     name: ClassVar[TextField] = TextField()
     description: ClassVar[TextField] = TextField(null=True)
+    author: ClassVar[TextField] = TextField(default="")
     created_at: ClassVar[DateTimeField] = DateTimeField(default=datetime.now)
 
 

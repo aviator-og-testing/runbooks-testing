@@ -29,15 +29,66 @@ go run ./cmd/server
 
 ```bash
 cd frontend
-npm start
+npm install
+npm start            # serves the SPA on :3000 and proxies /api to the Python backend
 ```
+
+Set `API_TARGET` if the Python backend is not on `http://localhost:8000`.
 
 ### Docker
 
 Run all services:
 ```bash
-docker-compose up
+docker compose up --build
 ```
+
+Then open http://localhost:3000 and sign in as `admin` / `admin` (admin role) or a regular user such as `alice` / `password` (also `bob`, `carol`). Admins can create and delete users; regular users have read-only access.
+
+| Service            | URL                   |
+|--------------------|-----------------------|
+| Frontend (website) | http://localhost:3000 |
+| Python API         | http://localhost:8000 |
+| Go API             | http://localhost:8080 |
+
+## Aviator Verify Previews
+
+This repo ships everything needed for Aviator to spin up a live preview and run Verify against the website:
+
+- `e2b.Dockerfile` — the sandbox image (Python + uv + Node toolchain).
+- `.aviator/scripts/preview-setup.sh` — starts the backend and frontend in the preview sandbox on port 3000.
+- `.aviator/verify/skills/` — guidance for the Verify agent (sign-in, navigation, what's observable).
+
+Two one-time setup steps in Aviator:
+
+1. Build the container template: Runbooks > Settings > Sandbox > Custom Templates > Add Custom Container Template, then paste or upload `e2b.Dockerfile` and give it a name.
+2. Add a preview config in the repo's Runbooks settings:
+
+```yaml
+runbooks:
+  preview:
+    - name: default
+      image: "<your custom template name>"
+      port: 3000
+      setup: .aviator/scripts/preview-setup.sh
+```
+
+The preview name `default` maps to `.aviator/verify/skills/default.md`. Aviator brings up the sandbox, runs the setup script, exposes port 3000 as the preview URL, and the Verify agent drives it. Sign-in uses the seeded `admin` / `admin` or `alice` / `password` accounts.
+
+### Driving Verify by hand
+
+`verify/` holds the repo-side pieces for exercising Verify against this app (human-driven):
+
+- `verify/secrets.example` — the account secrets the collector logs in with.
+- `verify/cases/<case>/` — each is a `change.sh` with a deterministic change; some deliberately violate a baseline invariant. Verify generates the criteria from the diff.
+
+The baseline invariants and the verify driver live on the mergeit side (`scripts/verify_local/`), since they talk to mergeit's database and API directly.
+
+One-time, alongside the two preview steps above:
+
+- Add the secrets from `verify/secrets.example` in Runbooks > Settings > Secrets.
+- From the mergeit checkout, seed this repo's baseline invariants (see `scripts/verify_local/seed_invariants.py`).
+
+To run a case: `just verify-pr <case>` opens a PR (e.g. `just verify-pr leak-password`), then drive Verify on that PR (via `scripts/verify_local/drive_verify.py` from the mergeit checkout, or the Aviator UI) and review the routing + verdicts.
 
 ## Testing
 
