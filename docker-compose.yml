@@ -9,8 +9,7 @@ services:
       - ./backend_python/src:/app/src
     environment:
       - RUNBOOKS_TESTING_DB_PATH=/app/data/runbooks_testing.db
-    # volumes for persistent sqlite
-    # - ./data:/app/data
+      - RUNBOOKS_TESTING_SEED_DEMO=1
 
   backend_go:
     build:
@@ -19,10 +18,12 @@ services:
     ports:
       - "8080:8080"
 
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend_python
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend_python
+    environment:
+      - API_TARGET=http://backend_python:8000
