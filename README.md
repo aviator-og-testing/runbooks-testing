@@ -76,20 +76,19 @@ The preview name `default` maps to `.aviator/verify/skills/default.md`. Aviator 
 
 ### Driving Verify by hand
 
-`verify/` holds a small harness for exercising Verify locally (human-driven, no grading):
+`verify/` holds the repo-side pieces for exercising Verify against this app (human-driven):
 
-- `verify/baseline-invariants.yaml` — the standing rules Verify checks every PR against.
 - `verify/secrets.example` — the account secrets the collector logs in with.
-- `verify/cases/<case>/` — each is a `change.sh` + a `criteria.md` (the PR body).
+- `verify/cases/<case>/` — each is a `change.sh` with a deterministic change; some deliberately violate a baseline invariant. Verify generates the criteria from the diff.
+
+The baseline invariants and the verify driver live on the mergeit side (`scripts/verify_local/`), since they talk to mergeit's database and API directly.
 
 One-time, alongside the two preview steps above:
 
 - Add the secrets from `verify/secrets.example` in Runbooks > Settings > Secrets.
-- Seed the baseline invariants: `just verify-invariants` (writes `[AUTOGEN]`-titled invariants into the local mergeit DB from the YAML).
+- From the mergeit checkout, seed this repo's baseline invariants (see `scripts/verify_local/seed_invariants.py`).
 
-To run a case: `just verify-pr <case>` opens a PR (e.g. `just verify-pr button-color-pass`), then open the runbook for that PR in Aviator and hit Preview, then Verify, and eyeball the routing and verdicts.
-
-To change the invariants: edit `verify/baseline-invariants.yaml` and re-run `just verify-invariants`.
+To run a case: `just verify-pr <case>` opens a PR (e.g. `just verify-pr leak-password`), then drive Verify on that PR (via `scripts/verify_local/drive_verify.py` from the mergeit checkout, or the Aviator UI) and review the routing + verdicts.
 
 ## Testing
 
