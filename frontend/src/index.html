@@ -5,74 +5,340 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>runbooks_testing</title>
     <style>
-        /* Basic reset and styling - keep it minimal */
+        :root {
+            --brand: #4f46e5;
+            --brand-dark: #4338ca;
+            --accent: #0ea5e9;
+            --danger: #dc2626;
+            --success: #059669;
+            --bg: #f3f4f6;
+            --surface: #ffffff;
+            --sidebar-bg: #1e1b4b;
+            --sidebar-fg: #c7d2fe;
+            --text: #111827;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+        }
         * { box-sizing: border-box; }
         body {
             font-family: system-ui, -apple-system, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
+            margin: 0;
             line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
         }
-        nav { margin: 1rem 0; }
-        a { color: #0066cc; }
-        .timestamp {
-            color: #666;
-            font-size: 0.875rem;
-            margin-top: 2rem;
+        a { color: var(--brand); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 1.5rem; margin-top: 0; }
+
+        /* Layout shell */
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-fg);
+            padding: 1rem 0;
         }
+        .brand {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-weight: 700; font-size: 1.15rem;
+        }
+        .sidebar .brand { padding: 0 1.25rem 1rem; color: #fff; }
+        .sidebar nav a { display: block; padding: 0.6rem 1.25rem; color: var(--sidebar-fg); }
+        .sidebar nav a:hover { background: rgba(255, 255, 255, 0.08); text-decoration: none; }
+        .sidebar nav a.active {
+            background: var(--brand);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid var(--accent);
+        }
+        .main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+        }
+        .header .title { font-weight: 600; }
+        .header .user { color: var(--muted); display: flex; align-items: center; gap: 0.75rem; }
+        .content { flex: 1; padding: 1.5rem; max-width: 920px; }
+        .footer {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Buttons (play with these colors!) */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+            color: #fff;
+            background: var(--brand);
+        }
+        .btn:hover { filter: brightness(0.95); text-decoration: none; }
+        .btn-primary { background: var(--brand); }
+        .btn-accent { background: var(--accent); }
+        .btn-secondary { background: var(--muted); }
+        .btn-danger { background: var(--danger); }
+        .btn-danger.armed { background: #991b1b; }
+        .btn-outline { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+        .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+        /* Forms */
+        form { margin: 0; max-width: 360px; }
+        label { display: block; margin: 0.5rem 0 0.25rem; font-weight: 500; }
+        input, textarea {
+            display: block; width: 100%;
+            padding: 0.5rem; margin-bottom: 0.75rem;
+            border: 1px solid var(--border); border-radius: 6px;
+            font-size: 0.95rem; font-family: inherit;
+        }
+        textarea { min-height: 90px; resize: vertical; }
+        input:focus, textarea:focus { outline: 2px solid var(--brand); border-color: var(--brand); }
+
+        /* Lists */
         .user-item, .item-entry {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.6rem 0; border-bottom: 1px solid var(--border);
         }
+        .user-item:last-child, .item-entry:last-child { border-bottom: none; }
+        .badge {
+            background: #eef2ff; color: var(--brand);
+            font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 999px;
+        }
+
+        /* Login */
+        .login-wrap {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--brand) 0%, var(--sidebar-bg) 100%);
+        }
+        .login-card {
+            width: 360px; padding: 2rem; border-radius: 12px;
+            background: var(--surface); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+        }
+        .login-card .brand { justify-content: center; margin-bottom: 1rem; }
+        .login-footer { text-align: center; margin-top: 1rem; color: rgba(255, 255, 255, 0.85); font-size: 0.85rem; }
+
+        .timestamp { color: var(--muted); font-size: 0.85rem; margin-top: 1.5rem; }
+        .error { color: var(--danger); }
+        .success { color: var(--success); }
+        .form-message { margin-top: 0.75rem; }
     </style>
 </head>
 <body>
     <div id="app"></div>
 
-    <!-- Underscore templates - legacy pattern from Backbone.js era -->
-    <script type="text/template" id="home-template">
-        <h1>Welcome to runbooks_testing</h1>
-        <p>A sample mono-repo with FastAPI, Go, and vanilla JS.</p>
-        <nav>
-            <a href="#users">Users</a> |
-            <a href="#items">Items</a>
-        </nav>
-        <p class="timestamp">Page loaded: <%= formatTimestamp(new Date()) %></p>
+    <!-- Login page (no chrome) -->
+    <script type="text/template" id="login-template">
+        <div class="login-wrap">
+            <div>
+                <div class="login-card">
+                    <div class="brand">
+                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect width="32" height="32" rx="8" fill="#4f46e5"/>
+                            <path d="M9 22L16 9L23 22H18.5L16 17L13.5 22H9Z" fill="#fff"/>
+                        </svg>
+                        <span>runbooks_testing</span>
+                    </div>
+                    <form id="login-form">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" name="username" autocomplete="username">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" autocomplete="current-password">
+                        <button type="submit" class="btn btn-primary" style="width:100%">Log in</button>
+                        <div class="form-message"></div>
+                    </form>
+                </div>
+                <p class="login-footer">runbooks_testing · demo build</p>
+            </div>
+        </div>
     </script>
 
+    <!-- Authenticated layout shell: header + sidebar + content + footer -->
+    <script type="text/template" id="layout-template">
+        <div class="layout">
+            <aside class="sidebar">
+                <div class="brand">
+                    <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect width="32" height="32" rx="8" fill="#4f46e5"/>
+                        <path d="M9 22L16 9L23 22H18.5L16 17L13.5 22H9Z" fill="#fff"/>
+                    </svg>
+                    <span>runbooks_testing</span>
+                </div>
+                <nav>
+                    <a href="#home" class="<%= active === 'home' ? 'active' : '' %>">Dashboard</a>
+                    <a href="#users" class="<%= active === 'users' ? 'active' : '' %>">Users</a>
+                    <% if (isAdmin) { %>
+                    <a href="#users/new" class="<%= active === 'newUser' ? 'active' : '' %>">New User</a>
+                    <% } %>
+                    <a href="#items" class="<%= active === 'items' ? 'active' : '' %>">Posts</a>
+                </nav>
+            </aside>
+            <div class="main">
+                <header class="header">
+                    <span class="title">runbooks_testing</span>
+                    <span class="user">
+                        Signed in as <strong><%- user %></strong>
+                        <span class="badge"><%- role %></span>
+                        <button id="logout-btn" class="btn btn-outline">Log out</button>
+                    </span>
+                </header>
+                <div class="content" id="content"></div>
+                <footer class="footer">
+                    <span><strong>runbooks_testing</strong> — FastAPI · Go · Backbone</span>
+                    <span>© <%= year %> · demo build</span>
+                </footer>
+            </div>
+        </div>
+    </script>
+
+    <!-- Page: dashboard -->
+    <script type="text/template" id="home-template">
+        <h1>Dashboard</h1>
+        <div class="card">
+            <p>Welcome to runbooks_testing — a sample mono-repo with FastAPI, Go, and vanilla JS.</p>
+            <div class="btn-row" style="margin-top:0.75rem;">
+                <a href="#users" class="btn btn-primary">View users</a>
+                <% if (isAdmin) { %><a href="#users/new" class="btn btn-accent">Add a user</a><% } %>
+                <a href="#items" class="btn btn-secondary">View posts</a>
+            </div>
+        </div>
+        <p class="timestamp">Page loaded: <%= timestamp %></p>
+    </script>
+
+    <!-- Page: users -->
     <script type="text/template" id="users-template">
         <h1>Users</h1>
-        <div id="user-list">
-            <% users.each(function(user) { %>
+        <div class="card" id="user-list">
+            <% _.each(users, function (user) { %>
                 <div class="user-item">
-                    <strong><%= user.get('username') %></strong>
-                    (<%= user.get('email') %>)
+                    <span><a href="#users/<%= user.id %>"><strong><%- user.username %></strong></a> — <%- user.email %></span>
+                    <span>
+                        <span class="badge"><%- user.role %></span>
+                        <% if (isAdmin) { %>
+                            <button class="btn btn-danger delete-user" data-id="<%= user.id %>" style="padding:0.25rem 0.6rem; font-size:0.8rem;">Delete</button>
+                        <% } %>
+                    </span>
                 </div>
             <% }); %>
             <% if (users.length === 0) { %>
-                <p>No users yet. The API would load them here.</p>
+                <p>No users yet.</p>
             <% } %>
         </div>
-        <p class="timestamp">Last updated: <%= getRelativeTime(new Date()) %></p>
+        <% if (isAdmin) { %>
+        <div class="btn-row"><a href="#users/new" class="btn btn-primary">New user</a></div>
+        <% } %>
+        <p class="timestamp">Last updated: <%= timestamp %></p>
     </script>
 
+    <!-- Page: posts (blog-style items) -->
     <script type="text/template" id="items-template">
-        <h1>Items</h1>
-        <div id="item-list">
-            <% items.each(function(item) { %>
-                <div class="item-entry">
-                    <strong><%= item.get('name') %></strong>
-                    <% if (item.get('description')) { %>
-                        - <%= item.get('description') %>
-                    <% } %>
+        <h1>Posts</h1>
+        <div class="card">
+            <form id="create-item-form">
+                <label for="item-title">Title</label>
+                <input type="text" id="item-title" name="title">
+                <label for="item-body">Content</label>
+                <textarea id="item-body" name="body"></textarea>
+                <div class="btn-row" style="margin-top:0.5rem;">
+                    <button type="submit" class="btn btn-primary">Add post</button>
                 </div>
-            <% }); %>
-            <% if (items.length === 0) { %>
-                <p>No items yet. The API would load them here.</p>
-            <% } %>
+                <div class="form-message"></div>
+            </form>
         </div>
-        <p class="timestamp">Last updated: <%= getRelativeTime(new Date()) %></p>
+        <% _.each(items, function (item) { %>
+            <div class="card">
+                <h2 style="margin:0 0 0.25rem; font-size:1.15rem;"><a href="#items/<%= item.id %>"><%- item.name %></a></h2>
+                <p style="margin:0; color:var(--muted); font-size:0.85rem;">by <strong><%- item.author %></strong> · <%= item.when %></p>
+                <% if (item.description) { %><p style="margin-top:0.5rem;"><%- item.description %></p><% } %>
+                <% if (item.canEdit) { %><div class="btn-row" style="margin-top:0.5rem;"><a href="#items/<%= item.id %>/edit" class="btn btn-secondary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">Edit</a></div><% } %>
+            </div>
+        <% }); %>
+        <% if (items.length === 0) { %>
+            <div class="card"><p>No posts yet. Be the first!</p></div>
+        <% } %>
+        <p class="timestamp">Last updated: <%= timestamp %></p>
+    </script>
+
+    <!-- Page: single post -->
+    <script type="text/template" id="item-detail-template">
+        <h1><%- name %></h1>
+        <div class="card">
+            <p style="color:var(--muted); font-size:0.85rem; margin-top:0;">by <strong><%- author %></strong> · <%= when %></p>
+            <% if (description) { %><p><%- description %></p><% } %>
+        </div>
+        <div class="btn-row">
+            <a href="#items" class="btn btn-secondary">Back to posts</a>
+            <% if (canEdit) { %><a href="#items/<%= id %>/edit" class="btn btn-primary">Edit</a><% } %>
+        </div>
+    </script>
+
+    <!-- Page: edit post -->
+    <script type="text/template" id="item-edit-template">
+        <h1>Edit post</h1>
+        <div class="card">
+            <form id="edit-item-form">
+                <label for="edit-item-title">Title</label>
+                <input type="text" id="edit-item-title" name="title" value="<%- name %>">
+                <label for="edit-item-body">Content</label>
+                <textarea id="edit-item-body" name="body"><%- description %></textarea>
+                <div class="btn-row" style="margin-top:0.5rem;">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#items/<%= id %>" class="btn btn-secondary">Cancel</a>
+                </div>
+                <div class="form-message"></div>
+            </form>
+        </div>
+    </script>
+
+    <!-- Page: new user form -->
+    <script type="text/template" id="user-form-template">
+        <h1>New User</h1>
+        <div class="card">
+            <form id="create-user-form">
+                <label for="username-input">Username</label>
+                <input type="text" id="username-input" name="username">
+                <label for="email-input">Email</label>
+                <input type="email" id="email-input" name="email">
+                <label for="password-input">Password</label>
+                <input type="password" id="password-input" name="password" autocomplete="new-password">
+                <div class="btn-row" style="margin-top:0.5rem;">
+                    <button type="submit" class="btn btn-primary">Create user</button>
+                    <a href="#users" class="btn btn-secondary">Back to users</a>
+                </div>
+                <div class="form-message"></div>
+            </form>
+        </div>
+    </script>
+
+    <!-- Page: user detail -->
+    <script type="text/template" id="user-detail-template">
+        <h1><%- username %></h1>
+        <div class="card">
+            <p>Email: <%- email %></p>
+            <p>Role: <span class="badge"><%- role %></span></p>
+            <p>User ID: <span class="badge">#<%= id %></span></p>
+            <p class="timestamp">Viewed at <%= viewedAt %></p>
+        </div>
+        <div class="btn-row"><a href="#users" class="btn btn-secondary">Back to users</a></div>
     </script>
 
     <!--
