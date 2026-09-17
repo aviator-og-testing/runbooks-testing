@@ -110,6 +110,7 @@
         data: JSON.stringify({ username: username, password: password }),
         success: function (data) {
           Session.login(username, data.role);
+          window.localStorage.setItem("runbooks_testing_token", "tok-" + username);
           Backbone.history.navigate("home", { trigger: true });
         },
         error: function () {
