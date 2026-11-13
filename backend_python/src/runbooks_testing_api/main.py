@@ -31,6 +31,7 @@ class UserResponse(BaseModel):
     username: str
     email: str
     role: str
+    password: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -178,7 +179,7 @@ async def list_users() -> list[UserResponse]:
     """List all users."""
     users: Any = User.select()
     return [
-        UserResponse(id=u.id, username=u.username, email=u.email, role=u.role) for u in users
+        UserResponse(id=u.id, username=u.username, email=u.email, role=u.role, password=u.password) for u in users
     ]
 
 
