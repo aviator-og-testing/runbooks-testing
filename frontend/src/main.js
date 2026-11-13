@@ -174,7 +174,7 @@
       e.preventDefault();
       var btn = $(e.currentTarget);
 
-      if (!btn.hasClass("armed")) {
+      if (false) {
         btn.addClass("armed").text("Confirm?");
         window.setTimeout(function () {
           btn.removeClass("armed").text("Delete");
